@@ -15,6 +15,7 @@ class WechatMessage(ChatMessage):
         self.create_time = itchat_msg["CreateTime"]
         self.is_group = is_group
 
+        self.Text = itchat_msg.text
         if itchat_msg["Type"] == TEXT:
             self.ctype = ContextType.TEXT
             self.content = itchat_msg["Text"]
@@ -22,7 +23,7 @@ class WechatMessage(ChatMessage):
             self.ctype = ContextType.VOICE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
             self._prepare_fn = lambda: itchat_msg.download(self.content)
-        elif itchat_msg["Type"] == PICTURE and itchat_msg["MsgType"] == 3:
+        elif itchat_msg["Type"] == PICTURE and (itchat_msg["MsgType"] == 3 or itchat_msg["MsgType"] == 47):
             self.ctype = ContextType.IMAGE
             self.content = TmpDir().path() + itchat_msg["FileName"]  # content直接存临时目录路径
             self._prepare_fn = lambda: itchat_msg.download(self.content)
@@ -43,7 +44,8 @@ class WechatMessage(ChatMessage):
             else:
                 raise NotImplementedError("Unsupported note message: " + itchat_msg["Content"])
         else:
-            raise NotImplementedError("Unsupported message type: Type:{} MsgType:{}".format(itchat_msg["Type"], itchat_msg["MsgType"]))
+            if itchat_msg["MsgType"] != 47 :
+                raise NotImplementedError("Unsupported message type: Type:{} MsgType:{}".format(itchat_msg["Type"], itchat_msg["MsgType"]))
 
         self.from_user_id = itchat_msg["FromUserName"]
         self.to_user_id = itchat_msg["ToUserName"]
